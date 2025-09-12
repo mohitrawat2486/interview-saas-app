@@ -80,7 +80,7 @@ php artisan db:seed --class=UserSeeder
 php artisan serve
 
 Note: Video files default to the public disk for a quick start. For production, switch to a private disk and stream via the auth-checked controller (see Ops & Security below).
-
+```
 
 | Role      | Email                                                 | Password   | Notes                          |
 | --------- | ----------------------------------------------------- | ---------- | ------------------------------ |
