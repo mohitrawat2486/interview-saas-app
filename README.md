@@ -1,7 +1,81 @@
 # Hireflix-Style One-Way Video Interview — Laravel + MySQL (MVP Pack)
 
-This pack contains all the **app code**, **migrations**, **routes**, and **views** to turn a fresh Laravel project
-into a one-way video interview app. It assumes **Laravel 11**, **PHP 8.2+**, **MySQL**, and **Breeze (Blade)** for auth.
+# Hireflix-Style One-Way Video Interview — Laravel + MySQL (MVP)
+
+> A lightweight, production-ready platform for **asynchronous (one-way) video interviews** built with **Laravel 11** + **MySQL**.  
+> Roles: **Admin** (manage), **Reviewer** (score), **Candidate** (record in-browser).
+
+[![Docs](https://img.shields.io/badge/Read%20the%20Docs-live-2C4?logo=readthedocs)](https://YOUR-PROJECT.readthedocs.io/en/latest/)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb4)
+![Laravel](https://img.shields.io/badge/Laravel-11-red)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
+## Table of Contents
+- [About the Product](#about-the-product)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Testing Logins](#testing-logins)
+- [Candidate Flow & URLs](#candidate-flow--urls)
+- [Environment Configuration](#environment-configuration)
+- [Common Routes](#common-routes)
+- [Troubleshooting](#troubleshooting)
+- [Security & Ops Notes](#security--ops-notes)
+- [Roadmap Ideas](#roadmap-ideas)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## About the Product
+This app delivers the **core workflow** of a one-way interview SaaS:
+- **Admins** create interviews, add questions, and send tokenized invitations.
+- **Candidates** join via a secure link and record answers **in the browser** (no app installs).
+- **Reviewers** watch submissions and leave **per-question scores** and **overall comments**.
+
+It’s intentionally minimal and clean so you can extend it into a full SaaS (payments, multi-tenant, analytics).
+
+---
+
+## Key Features
+- **Interview builder:** title, description, per-question settings (order, time limit, thinking time, retakes).
+- **Invitations:** tokenized candidate links with optional expiry.
+- **In-browser recorder:** uses the **MediaRecorder API** (WebM; MP4 where supported), timer, optional retakes.
+- **Review console:** watch answers, score per question, add comments, overall score/comment.
+- **Storage:** public (MVP) or **private disk + secure streaming** controller; S3/CloudFront-ready.
+- **Clean UX:** Tailwind UI + Alpine.js enhancements.
+
+---
+
+## Tech Stack
+- **Backend:** Laravel 11 (PHP 8.2+), Eloquent, Breeze (Blade)
+- **DB:** MySQL 8 (MariaDB 10.6+ also works)
+- **Frontend:** Blade, Tailwind CSS, Alpine.js, Vite
+- **Media:** MediaRecorder API (WebM/Opus; Safari 17+ supports WebM/MP4)
+- **Optional:** S3 + CloudFront (signed URLs), Queues for post-processing/email
+
+---
+
+## Architecture
+```mermaid
+erDiagram
+  users ||--o{ interviews : "created_by"
+  users ||--o{ submissions : "candidate_id"
+  users ||--o{ reviews : "reviewer_id"
+
+  interviews ||--o{ questions : contains
+  interviews ||--o{ invitations : invites
+  interviews ||--o{ submissions : has
+
+  submissions ||--o{ answers : includes
+  submissions ||--o{ reviews : reviewed_by
+
+  questions ||--o{ answers : answered
+  reviews ||--o{ review_items : details
+  questions ||--o{ review_items : scored
 
 ---
 
@@ -39,32 +113,10 @@ php artisan storage:link
 > For MVP, we store videos on the **public** disk for quick streaming.
 > See the notes below for switching to a private disk + signed streaming.
 
----
-
-## 3) Copy this pack into your project
-
-Unzip this pack into your newly created project (overwrite when prompted):
-
-```bash
-# from the directory containing this zip
-unzip -o hireflix-mvp-pack.zip -d hireflix
-```
-
-Alternatively, copy with rsync or your file explorer.
 
 ---
 
-## 4) Register the role middleware alias
-
-Open **app/Http/Kernel.php** and add this line to `$routeMiddleware`:
-
-```php
-'role' => \App\Http\Middleware\CheckRole::class,
-```
-
----
-
-## 5) Migrate + seed (creates admin/reviewer/candidate test users)
+## 3) Migrate + seed (creates admin/reviewer/candidate test users)
 
 ```bash
 php artisan migrate
@@ -78,7 +130,7 @@ Users created:
 
 ---
 
-## 6) Run it
+## 4) Run it
 
 ```bash
 php artisan serve
