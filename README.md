@@ -1,156 +1,123 @@
-# Hireflix-Style One-Way Video Interview — Laravel + MySQL (MVP Pack)
+# One-Way Interview SaaS — Laravel + MySQL
 
-# Hireflix-Style One-Way Video Interview — Laravel + MySQL (MVP)
+> A lightweight, production-ready platform for **asynchronous candidate video interviews**.  
+> Admins and reviewers create interviews and invitations; candidates record answers in-browser; reviewers score and comment.
 
-> A lightweight, production-ready platform for **asynchronous (one-way) video interviews** built with **Laravel 11** + **MySQL**.  
-> Roles: **Admin** (manage), **Reviewer** (score), **Candidate** (record in-browser).
-
-[![Docs](https://img.shields.io/badge/Read%20the%20Docs-live-2C4?logo=readthedocs)](https://YOUR-PROJECT.readthedocs.io/en/latest/)
-![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb4)
-![Laravel](https://img.shields.io/badge/Laravel-11-red)
-![License](https://img.shields.io/badge/license-MIT-green)
+[![Read the Docs](https://img.shields.io/badge/Read%20the%20Docs-live-2C4?logo=readthedocs)](https://your-project.readthedocs.io/en/latest/)
 
 ---
 
 ## Table of Contents
-- [About the Product](#about-the-product)
-- [Key Features](#key-features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
+- [About this Project](#about-this-project)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
 - [Installation](#installation)
-- [Testing Logins](#testing-logins)
-- [Candidate Flow & URLs](#candidate-flow--urls)
-- [Environment Configuration](#environment-configuration)
-- [Common Routes](#common-routes)
-- [Troubleshooting](#troubleshooting)
-- [Security & Ops Notes](#security--ops-notes)
-- [Roadmap Ideas](#roadmap-ideas)
-- [Contributing](#contributing)
-- [License](#license)
+- [Testing Logins (Seeded)](#testing-logins-seeded)
+- [Key Routes](#key-routes)
+- [Ops & Security](#ops--security)
 
 ---
 
-## About the Product
-This app delivers the **core workflow** of a one-way interview SaaS:
-- **Admins** create interviews, add questions, and send tokenized invitations.
-- **Candidates** join via a secure link and record answers **in the browser** (no app installs).
-- **Reviewers** watch submissions and leave **per-question scores** and **overall comments**.
+## About this Project
+“Hireflix-style” one-way interviews let teams evaluate candidates on their own time. This app ships the core: interview builder, tokenized invitations, browser recording (no apps needed), and a reviewer console with per-question scoring. It’s designed as a SaaS foundation—clean Laravel code, Tailwind UI, and optional cloud storage/CDN for scale.
 
-It’s intentionally minimal and clean so you can extend it into a full SaaS (payments, multi-tenant, analytics).
-
----
-
-## Key Features
-- **Interview builder:** title, description, per-question settings (order, time limit, thinking time, retakes).
-- **Invitations:** tokenized candidate links with optional expiry.
-- **In-browser recorder:** uses the **MediaRecorder API** (WebM; MP4 where supported), timer, optional retakes.
-- **Review console:** watch answers, score per question, add comments, overall score/comment.
-- **Storage:** public (MVP) or **private disk + secure streaming** controller; S3/CloudFront-ready.
-- **Clean UX:** Tailwind UI + Alpine.js enhancements.
+Badges:
+- **Multi-role** (Admin/Reviewer/Candidate)
+- **Secure Streaming** (optional private disk)
+- **Lightweight Alpine.js UX**
 
 ---
 
-## Tech Stack
-- **Backend:** Laravel 11 (PHP 8.2+), Eloquent, Breeze (Blade)
-- **DB:** MySQL 8 (MariaDB 10.6+ also works)
-- **Frontend:** Blade, Tailwind CSS, Alpine.js, Vite
-- **Media:** MediaRecorder API (WebM/Opus; Safari 17+ supports WebM/MP4)
-- **Optional:** S3 + CloudFront (signed URLs), Queues for post-processing/email
+## Features
+- Admins/Reviewers: create interviews (title, description, defaults), manage questions (order, time/think limits, retakes).
+- Invitations: tokenized links with optional expiry; candidates can start without creating an account (auto-provisioned).
+- Candidate Recorder: in-browser `MediaRecorder` (WebM/MP4 where supported), per-question timer, configurable retakes, uploads.
+- Reviewer Console: watch answers, score each question, leave comments, overall score/comment.
+- Storage: public (MVP) or private disk + controller-gated streaming; S3/CloudFront ready.
+- Clean code: Laravel MVC, Breeze auth, Tailwind/Blade, Alpine micro-interactions.
 
 ---
 
-## Architecture
-```mermaid
-erDiagram
-  users ||--o{ interviews : "created_by"
-  users ||--o{ submissions : "candidate_id"
-  users ||--o{ reviews : "reviewer_id"
-
-  interviews ||--o{ questions : contains
-  interviews ||--o{ invitations : invites
-  interviews ||--o{ submissions : has
-
-  submissions ||--o{ answers : includes
-  submissions ||--o{ reviews : reviewed_by
-
-  questions ||--o{ answers : answered
-  reviews ||--o{ review_items : details
-  questions ||--o{ review_items : scored
+## Technologies Used
+- **Laravel 11** (PHP 8.2+), Breeze (Blade) for auth & scaffolding  
+- **MySQL 8** for relational data  
+- **Tailwind CSS** UI + **Alpine.js** for interactive bits  
+- **MediaRecorder API** for camera/mic capture in the browser  
+- **Vite** for asset bundling  
+- Optional: **S3 + CloudFront** with signed URLs, queues for post-processing
 
 ---
 
-## 0) Create a fresh Laravel project
+## Installation
 
+**Requirements:** PHP 8.2+, Composer, Node 18+, MySQL 8 (or MariaDB 10.6+)
+
+1) Create the Laravel app
 ```bash
-composer create-project laravel/laravel hireflix
-cd hireflix
-```
+composer create-project laravel/laravel interviewApp
+cd interviewApp
 
-> If you're using Sail or Valet, adapt accordingly.
+2) Auth scaffolding (Breeze)
 
----
-
-## 1) Install Breeze (Blade) auth scaffolding
-
-```bash
 composer require laravel/breeze --dev
 php artisan breeze:install blade
 npm i
 npm run build
-```
 
----
+3) Environment & storage
 
-## 2) Configure DB and storage
-
-Edit `.env` to set your MySQL credentials, then:
-
-```bash
+cp .env.example .env
 php artisan key:generate
 php artisan storage:link
-```
 
-> For MVP, we store videos on the **public** disk for quick streaming.
-> See the notes below for switching to a private disk + signed streaming.
+4) Database & seed
 
-
----
-
-## 3) Migrate + seed (creates admin/reviewer/candidate test users)
-
-```bash
 php artisan migrate
 php artisan db:seed --class=UserSeeder
-```
 
-Users created:
-- admin@example.com / password (role: admin)
-- reviewer@example.com / password (role: reviewer)
-- candidate@example.com / password (role: candidate)
+5) Run 
 
----
-
-## 4) Run it
-
-```bash
 php artisan serve
-```
 
-- Login as **admin** or **reviewer** and go to `/dashboard`.
-- Create an interview, add questions, create an invitation.
-- Use the invitation link to record as a candidate (no login required for MVP).
-- As a reviewer, go to `/review/submissions` to score and leave comments.
+Note: Video files default to the public disk for a quick start. For production, switch to a private disk and stream via the auth-checked controller (see Ops & Security below).
 
----
 
-## Notes / Options
+| Role      | Email                                                 | Password   | Notes                          |
+| --------- | ----------------------------------------------------- | ---------- | ------------------------------ |
+| Admin     | [admin@example.com](mailto:admin@example.com)         | `12345678` | Full control                   |
+| Reviewer  | [reviewer@example.com](mailto:reviewer@example.com)   | `12345678` | Review & score                 |
+| Candidate | [candidate@example.com](mailto:candidate@example.com) | `12345678` | Usually enters via invite link |
 
-- **Public vs Private videos**: For quick MVP, videos are stored on the public disk. To harden:
-  - Set `FILESYSTEM_DISK=private` and change the `VideoStreamController` and upload disk to `private`.
-  - Keep the `<video src="{ route('answer.stream', $ans) }">` pattern so access checks run server-side.
-- **Large uploads**: Bump PHP/server limits as needed (`upload_max_filesize`, `post_max_size`, Nginx/Apache client size).
-- **Retakes & limits**: Enforced per-question; the views already track `retake_number`.
-- **Thinking time**: Field exists (`thinking_time_seconds`), you can add a countdown overlay before recording starts.
+Candidate Invitation Start Link (example):
+http://127.0.0.1:8000/i/7efce4d3-3a03-4021-92a7-886b10d2d2d7
 
-Enjoy!
-  
+
+Key Routes
+
+Admin / Reviewer
+
+/admin/interviews — manage interviews
+
+/review/submissions — review queue
+
+Candidate Flow
+
+/i/{token} — invitation landing → start
+
+/s/{submission}/q/{order} — recorder per question
+
+Secure Streaming
+
+/answer/{answer}/stream — gated playback (auth required)
+
+Ops & Security
+
+1. Private videos: set FILESYSTEM_DISK=private, serve via controller (auth check) or S3 signed URLs.
+
+2. Upload limits: tune upload_max_filesize, post_max_size, and web server client size.
+
+3. HTTPS & Permissions: use HTTPS in production; restrict who can view submissions.
+
+4. Scalability: offload media to S3 + CloudFront; enable queues for email/post-processing.
+
+5. Compliance: define data retention & deletion policies; consider per-tenant buckets if multi-tenant.
