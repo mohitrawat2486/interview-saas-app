@@ -21,21 +21,26 @@
   </div>
 </div>
 
+{{-- 🔒 Hidden POST form for finalize (avoids GET to a POST-only route) --}}
+<form id="finalizeForm" method="POST" action="{{ route('candidate.finalize', $submission->id) }}" class="hidden">
+  @csrf
+</form>
+
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <script>
-const timeLimit = {{ $question->time_limit_seconds }};
+const timeLimit   = {{ $question->time_limit_seconds }};
 const allowRetake = {{ $question->allow_retake ? 'true' : 'false' }};
-const uploadUrl = "{{ route('candidate.upload', [$submission->id, $question->id]) }}";
-const nextUrlAfter = "{{ route('candidate.question', [$submission->id, $order+1]) }}";
-const finalizeUrl = "{{ route('candidate.finalize', $submission->id) }}";
-const totalQs = {{ $submission->interview->questions->count() }};
-const isLast = {{ $order }} >= totalQs;
+const uploadUrl   = "{{ route('candidate.upload', [$submission->id, $question->id]) }}";
+const nextUrlAfter= "{{ route('candidate.question', [$submission->id, $order+1]) }}";
+const finalizeUrl = "{{ route('candidate.finalize', $submission->id) }}"; // (kept for reference)
+const totalQs     = {{ $submission->interview->questions->count() }};
+const isLast      = {{ $order }} >= totalQs;
 
 let stream, recorder, chunks = [], retake = 1, timerInt, secs = 0, blob;
 
 const $ = sel => document.querySelector(sel);
 const alertBox = $('#alerts');
-const preview = $('#preview');
+const preview  = $('#preview');
 
 async function initCam() {
   try {
@@ -49,23 +54,29 @@ initCam();
 
 $('#btnStart').onclick = () => {
   if (!stream) return;
+  alertBox.textContent = '';
   chunks = []; secs = 0; blob = null;
-  recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+
+  const options = { mimeType: 'video/webm' };
+  if (!MediaRecorder.isTypeSupported(options.mimeType)) delete options.mimeType;
+
+  recorder = new MediaRecorder(stream, options);
+  recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
   recorder.onstop = () => {
     blob = new Blob(chunks, { type: 'video/webm' });
     $('#btnRetake').disabled = !allowRetake;
     $('#btnNext').disabled = false;
   };
   recorder.start();
+
   $('#btnStart').disabled = true;
-  $('#btnStop').disabled = false;
+  $('#btnStop').disabled  = false;
   startTimer();
 };
 
 $('#btnStop').onclick = () => {
   if (recorder && recorder.state !== 'inactive') recorder.stop();
-  $('#btnStop').disabled = true;
+  $('#btnStop').disabled  = true;
   $('#btnStart').disabled = true;
   stopTimer();
 };
@@ -73,17 +84,27 @@ $('#btnStop').onclick = () => {
 $('#btnRetake').onclick = () => {
   if (!allowRetake) return;
   retake++;
+  blob = null;
+  alertBox.textContent = `Retake #${retake}`;
   $('#btnStart').disabled = false;
   $('#btnRetake').disabled = true;
   $('#btnNext').disabled = true;
-  alertBox.textContent = `Retake #${retake}`;
 };
 
 $('#btnNext').onclick = async () => {
   if (!blob) { alertBox.textContent = 'Please record first.'; return; }
-  await upload(blob, secs, retake);
+  $('#btnNext').disabled = true;
+
+  const ok = await upload(blob, secs, retake);
+  if (!ok) {
+    alertBox.textContent = 'Upload failed. Please try again.';
+    $('#btnNext').disabled = false;
+    return;
+  }
+
   if (isLast) {
-    window.location.href = finalizeUrl;
+    // ✅ POST finalize instead of GET
+    document.getElementById('finalizeForm').submit();
   } else {
     window.location.href = nextUrlAfter;
   }
@@ -94,15 +115,22 @@ async function upload(videoBlob, duration, retakeNumber){
   fd.append('video', videoBlob, `answer-q{{ $question->id }}.webm`);
   fd.append('duration_seconds', duration);
   fd.append('retake_number', retakeNumber);
-  const res = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content},
-    body: fd
-  });
-  if (!res.ok) { alertBox.textContent = 'Upload failed.'; }
+
+  try {
+    const res = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+      body: fd
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
 }
 
 function startTimer() {
+  clearInterval(timerInt);
+  $('#timer').textContent = `0s / ${timeLimit}s`;
   timerInt = setInterval(() => {
     secs++;
     $('#timer').textContent = `${secs}s / ${timeLimit}s`;

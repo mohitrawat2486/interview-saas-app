@@ -50,7 +50,7 @@
       <div class="actions">
         <!-- Replace docsURL below if you want a hard link -->
         <a id="docsBtn" class="btn primary" href="#" target="_blank" rel="noopener">Read the Docs</a>
-        <a class="btn ghost" href="/dashboard">Back to Dashboard</a>
+        <a class="btn ghost" href="/">Back</a>
       </div>
       <nav>
         <a href="#about">About</a>
@@ -127,7 +127,7 @@ php artisan db:seed --class=UserSeeder</code></pre>
 
       <h3>5) Run</h3>
       <pre><code>php artisan serve
-# open http://127.0.0.1:8000</code></pre>
+# open http://127.0.0.1:8000 (local)</code></pre>
 
       <p class="lead">Video files default to the <code>public</code> disk for a quick start. For production, switch to a private disk and stream via the auth-checked controller (see Ops & Security below).</p>
     </section>
@@ -138,9 +138,9 @@ php artisan db:seed --class=UserSeeder</code></pre>
       <table>
         <thead><tr><th>Role</th><th>Email</th><th>Password</th><th>Notes</th></tr></thead>
         <tbody>
-          <tr><td>Admin</td><td>admin@example.com</td><td><code>12345678</code></td><td>Full control</td></tr>
-          <tr><td>Reviewer</td><td>reviewer@example.com</td><td><code>12345678</code></td><td>Review & score</td></tr>
-          <tr><td>Candidate</td><td>candidate@example.com</td><td><code>12345678</code></td><td>Usually enters via invite link </td></tr>
+          <tr><td>Admin</td><td>admin@example.com</td><td><code>password</code></td><td>Full control</td></tr>
+          <tr><td>Reviewer</td><td>reviewer@example.com</td><td><code>password</code></td><td>Review & score</td></tr>
+          <tr><td>Candidate</td><td>candidate@example.com</td><td><code>password</code></td><td>Usually enters via invite link </td></tr>
           <tr><td>Candidate Interview Start Link (example)</td><td>http://127.0.0.1:8000/i/7efce4d3-3a03-4021-92a7-886b10d2d2d7</td></tr>
         </tbody>
       </table>

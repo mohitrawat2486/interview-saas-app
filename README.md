@@ -8,43 +8,48 @@
 ---
 
 ## Table of Contents
-- [About this Project](#about-this-project)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Testing Logins (Seeded)](#testing-logins-seeded)
-- [Key Routes](#key-routes)
-- [Ops & Security](#ops--security)
+
+-   [About this Project](#about-this-project)
+-   [Features](#features)
+-   [Technologies Used](#technologies-used)
+-   [Installation](#installation)
+-   [Testing Logins (Seeded)](#testing-logins-seeded)
+-   [Key Routes](#key-routes)
+-   [Ops & Security](#ops--security)
 
 ---
 
 ## About this Project
+
 “Hireflix-style” one-way interviews let teams evaluate candidates on their own time. This app ships the core: interview builder, tokenized invitations, browser recording (no apps needed), and a reviewer console with per-question scoring. It’s designed as a SaaS foundation—clean Laravel code, Tailwind UI, and optional cloud storage/CDN for scale.
 
 Badges:
-- **Multi-role** (Admin/Reviewer/Candidate)
-- **Secure Streaming** (optional private disk)
-- **Lightweight Alpine.js UX**
+
+-   **Multi-role** (Admin/Reviewer/Candidate)
+-   **Secure Streaming** (optional private disk)
+-   **Lightweight Alpine.js UX**
 
 ---
 
 ## Features
-- Admins/Reviewers: create interviews (title, description, defaults), manage questions (order, time/think limits, retakes).
-- Invitations: tokenized links with optional expiry; candidates can start without creating an account (auto-provisioned).
-- Candidate Recorder: in-browser `MediaRecorder` (WebM/MP4 where supported), per-question timer, configurable retakes, uploads.
-- Reviewer Console: watch answers, score each question, leave comments, overall score/comment.
-- Storage: public (MVP) or private disk + controller-gated streaming; S3/CloudFront ready.
-- Clean code: Laravel MVC, Breeze auth, Tailwind/Blade, Alpine micro-interactions.
+
+-   Admins/Reviewers: create interviews (title, description, defaults), manage questions (order, time/think limits, retakes).
+-   Invitations: tokenized links with optional expiry; candidates can start without creating an account (auto-provisioned).
+-   Candidate Recorder: in-browser `MediaRecorder` (WebM/MP4 where supported), per-question timer, configurable retakes, uploads.
+-   Reviewer Console: watch answers, score each question, leave comments, overall score/comment.
+-   Storage: public (MVP) or private disk + controller-gated streaming; S3/CloudFront ready.
+-   Clean code: Laravel MVC, Breeze auth, Tailwind/Blade, Alpine micro-interactions.
 
 ---
 
 ## Technologies Used
-- **Laravel 11** (PHP 8.2+), Breeze (Blade) for auth & scaffolding  
-- **MySQL 8** for relational data  
-- **Tailwind CSS** UI + **Alpine.js** for interactive bits  
-- **MediaRecorder API** for camera/mic capture in the browser  
-- **Vite** for asset bundling  
-- Optional: **S3 + CloudFront** with signed URLs, queues for post-processing
+
+-   **Laravel 11** (PHP 8.2+), Breeze (Blade) for auth & scaffolding
+-   **MySQL 8** for relational data
+-   **Tailwind CSS** UI + **Alpine.js** for interactive bits
+-   **MediaRecorder API** for camera/mic capture in the browser
+-   **Vite** for asset bundling
+-   Optional: **S3 + CloudFront** with signed URLs, queues for post-processing
 
 ---
 
@@ -52,7 +57,8 @@ Badges:
 
 **Requirements:** PHP 8.2+, Composer, Node 18+, MySQL 8 (or MariaDB 10.6+)
 
-1) Create the Laravel app
+1. Create the Laravel app
+
 ```bash
 composer create-project laravel/laravel interviewApp
 cd interviewApp
@@ -75,7 +81,7 @@ php artisan storage:link
 php artisan migrate
 php artisan db:seed --class=UserSeeder
 
-5) Run 
+5) Run
 
 php artisan serve
 
@@ -84,13 +90,12 @@ Note: Video files default to the public disk for a quick start. For production, 
 
 | Role      | Email                                                 | Password   | Notes                          |
 | --------- | ----------------------------------------------------- | ---------- | ------------------------------ |
-| Admin     | [admin@example.com](mailto:admin@example.com)         | `12345678` | Full control                   |
-| Reviewer  | [reviewer@example.com](mailto:reviewer@example.com)   | `12345678` | Review & score                 |
-| Candidate | [candidate@example.com](mailto:candidate@example.com) | `12345678` | Usually enters via invite link |
+| Admin     | [admin@example.com](mailto:admin@example.com)         | `password` | Full control                   |
+| Reviewer  | [reviewer@example.com](mailto:reviewer@example.com)   | `password` | Review & score                 |
+| Candidate | [candidate@example.com](mailto:candidate@example.com) | `password` | Usually enters via invite link |
 
 Candidate Invitation Start Link (example):
 http://127.0.0.1:8000/i/7efce4d3-3a03-4021-92a7-886b10d2d2d7
-
 
 Key Routes
 

@@ -37,7 +37,7 @@
                     <h2 class="mb-4">Welcome to Application</h2>
                     <p class="mb-8">This is a starting point for enterprise SaaS product. We've set up a professional design system to get you started.</p>
                     <div class="flex justify-center gap-4">
-                        <a href="{{ url('/read-the-docs.html') }}" target="_blank" class="btn btn-primary">Read the Docs</a>
+                        <a href="{{ url('/read-the-docs.html') }}" class="btn btn-primary">Read the Docs</a>
                     </div>
                 </div>
             </main>
