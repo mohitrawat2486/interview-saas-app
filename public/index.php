@@ -1,5 +1,5 @@
 <?php
-
+echo "I am working"; die;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
