@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
@@ -9,12 +10,8 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
-echo "hereee";
-
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
-
-echo "here 17";
 
 // Bootstrap Laravel and handle the request...
 /** @var Application $app */
