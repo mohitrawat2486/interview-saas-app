@@ -6,6 +6,7 @@
     }
   },
   "outputDirectory": "public",
+   "buildCommand": "npm ci && npm run build",
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.php" }
   ],
